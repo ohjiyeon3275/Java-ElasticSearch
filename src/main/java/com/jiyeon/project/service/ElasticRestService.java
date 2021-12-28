@@ -21,19 +21,15 @@ public class ElasticRestService {
 
     ElasticsearchClient client = new ElasticsearchClient(transport);
 
-    public void search() throws IOException {
+    public void search(String index, String field, String value) throws IOException {
         SearchResponse<Movie> search = client.search(s -> s
-                .index("")
+                .index(index)
                 .query(q -> q
                         .term(t -> t
-                                .field("name")
-                                .value(v -> v.stringValue(""))
+                                .field(field)
+                                .value(v -> v.stringValue(value))
                         )),
                 Movie.class);
-
-        for(Hit<Movie> hit : search.hits().hits()){
-//            process(hit.source());
-        }
 
     }
 }
