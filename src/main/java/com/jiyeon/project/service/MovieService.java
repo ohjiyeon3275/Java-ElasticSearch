@@ -10,8 +10,8 @@ import org.springframework.stereotype.Service;
 public class MovieService {
     private final MovieRepository movieRepository;
 
-    public Movie findById(String id){
-        return movieRepository.findById(id).orElse(null);
+    public Movie findByTitle(String title){
+        return movieRepository.findByTitle(title);
     }
 
     public void save(Movie movie){

@@ -16,6 +16,8 @@ import javax.persistence.Id;
 public class Movie {
 
     @Id
+    public Long id;
+
     @Field(type = FieldType.Keyword)
     public String title;
 
