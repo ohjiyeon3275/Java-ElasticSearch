@@ -16,12 +16,12 @@ import javax.persistence.Id;
 public class Movie {
 
     @Id
-    public Long id;
+    private Long id;
 
     @Field(type = FieldType.Keyword)
-    public String title;
+    private String title;
 
     @Field(type= FieldType.Text)
-    public Integer year;
+    private Integer year;
 
 }

@@ -17,6 +17,11 @@ public class MovieController {
         movieService.save(movie);
     }
 
+    /**
+     *  title로 찾는것 까지는 완료했으나
+     *  localhost:9200/_bulk --data-binary @movies.json (외부 json데이터 마이그레이션)
+     *  & 해당 데이터들의 검색기능은 아직 미완
+     */
     @GetMapping("/{title}")
     public Movie findById(@PathVariable String title){
         return movieService.findByTitle(title);
