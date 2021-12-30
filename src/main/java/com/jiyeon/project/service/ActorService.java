@@ -1,5 +1,7 @@
 package com.jiyeon.project.service;
 
+import com.jiyeon.project.dto.SearchRequestDto;
+import com.jiyeon.project.util.SearchUtil;
 import org.elasticsearch.action.get.GetRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,14 +10,19 @@ import lombok.AllArgsConstructor;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.rest.RestStatus;
+import org.elasticsearch.search.SearchHit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @AllArgsConstructor
@@ -26,7 +33,7 @@ public class ActorService {
 
     private final RestHighLevelClient restHighLevelClient;
 
-    public Boolean save(Actor actor){
+    public boolean save(Actor actor){
 
         try{
             String actorAsString = mapper.writeValueAsString(actor);
@@ -47,7 +54,7 @@ public class ActorService {
             e.printStackTrace();
         }
 
-        return false;
+        return true;
     }
 
     public Actor findById(String id){
@@ -64,9 +71,43 @@ public class ActorService {
 
         }catch (Exception e){
             LOG.error(e.getMessage(), e);
+        }
+        return null;
+
+    }
+
+    public List<Actor> search(SearchRequestDto searchRequestDto){
+
+        SearchRequest searchRequest = SearchUtil.buildSearchRequest(
+                "actor-mapping", searchRequestDto);
+
+        if(searchRequest == null){
+            LOG.error("searchRequest 없음");
             return null;
         }
+
+        try{
+            SearchResponse searchResponse = restHighLevelClient.search(
+                    searchRequest, RequestOptions.DEFAULT);
+
+            SearchHit[] searchHits = searchResponse.getHits().getHits();
+            List<Actor> actors = new ArrayList<>(searchHits.length);
+
+            for( SearchHit hit : searchHits ){
+                actors.add(
+                        mapper.readValue(hit.getSourceAsString(), Actor.class)
+                );
+            }
+
+            return actors;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
+
 
 
 }
