@@ -2,6 +2,7 @@ package com.jiyeon.project.service;
 
 import com.jiyeon.project.util.IndexUtil;
 import lombok.AllArgsConstructor;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.CreateIndexRequest;
@@ -27,39 +28,67 @@ public class IndexService {
     @Autowired
     private RestHighLevelClient restHighLevelClient;
 
-
     @PostConstruct
-    public void tryToCreateIndices() throws IOException {
+    public void  tryToCreateIndices() {
+        /**
+         * isDeleted 로 flag 를 설정해주는 이유는
+         * @PostConstruct 작동으로 어플리케이션을 실행시킬때마다
+         * indices가 리셋되지 않도록 함이다.
+         */
+        recreateIndices(false);
+    }
+
+
+    public void recreateIndices(Boolean isDeleted) {
         String settings = IndexUtil.loadAsString("static/es-mapping.json");
 
         for( String index : INDICES_TO_CREATE ){
 
-            //to get checking indices
-            Boolean isIndex = restHighLevelClient
-                    .indices()
-                    .exists(new GetIndexRequest(index), RequestOptions.DEFAULT);
+            try {
+                //to get checking indices
+                Boolean isIndex = restHighLevelClient
+                        .indices()
+                        .exists(new GetIndexRequest(index), RequestOptions.DEFAULT);
 
-            if(isIndex){
-                continue;
+                if (isIndex) {
+                    if(!isDeleted) {
+                        //if index exists and isDelete flag is false -> skip the creating process.
+                        continue;
+                    }
+
+                    // to make sure index is empty (?)
+                    restHighLevelClient.indices().delete(
+                            new DeleteIndexRequest(index), RequestOptions.DEFAULT);
+
+                }
+
+                //불러온 파일로 새로운 인덱스를 생성 -- with settings, mappings.
+                CreateIndexRequest createIndexRequest = new CreateIndexRequest(index);
+                createIndexRequest.settings(settings, XContentType.JSON);
+
+                String mappings = loadMappings(index);
+
+                if(mappings != null){
+                    createIndexRequest.mapping(mappings, XContentType.JSON);
+                }
+                restHighLevelClient.indices().create(createIndexRequest, RequestOptions.DEFAULT);
+
+            }catch(Exception e){
+                LOG.error(e.getMessage(), e);
             }
-
-
-            //mapping file 불러옴
-            String mappings = IndexUtil.loadAsString("static/mappings/"+ index + ".json");
-            if(settings == null || mappings == null){
-                LOG.error("fail to create index");
-            }
-
-            //불러온 파일로 새로운 인덱스를 생성 -- with settings, mappings.
-            CreateIndexRequest createIndexRequest = new CreateIndexRequest(index);
-            createIndexRequest.settings(settings, XContentType.JSON);
-            createIndexRequest.mapping(mappings, XContentType.JSON);
-
-            restHighLevelClient.indices().create(createIndexRequest, RequestOptions.DEFAULT);
-
         }
     }
 
+    private String loadMappings(String index) {
+        //mapping file 불러옴 --> 따로 함수 생성
+
+        String mappings = IndexUtil.loadAsString("static/mappings/" + index + ".json");
+        if (mappings == null) {
+            LOG.error("fail to create index");
+            return null;
+        }
+        return mappings;
+    }
 
 
 }
