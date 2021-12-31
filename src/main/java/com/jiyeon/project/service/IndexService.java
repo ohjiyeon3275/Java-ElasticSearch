@@ -20,7 +20,7 @@ import java.util.List;
 @AllArgsConstructor
 public class IndexService {
 
-    private List<String> INDICES_TO_CREATE = List.of("actor-mapping");
+    private static List<String> INDICES_TO_CREATE = List.of("actor-mapping");
 
     private static final Logger LOG = LoggerFactory.getLogger(IndexUtil.class);
 
@@ -39,6 +39,7 @@ public class IndexService {
 
 
     public void recreateIndices(Boolean isDeleted) {
+
         String settings = IndexUtil.loadAsString("static/es-mapping.json");
 
         for( String index : INDICES_TO_CREATE ){
@@ -48,6 +49,7 @@ public class IndexService {
                 Boolean isIndex = restHighLevelClient
                         .indices()
                         .exists(new GetIndexRequest(index), RequestOptions.DEFAULT);
+
 
                 if (isIndex) {
                     if(!isDeleted) {
@@ -62,15 +64,19 @@ public class IndexService {
                 }
 
                 //불러온 파일로 새로운 인덱스를 생성 -- with settings, mappings.
-                CreateIndexRequest createIndexRequest = new CreateIndexRequest(index);
+                CreateIndexRequest createIndexRequest = new CreateIndexRequest("actor");
                 createIndexRequest.settings(settings, XContentType.JSON);
 
                 String mappings = loadMappings(index);
+                System.out.println(mappings);
+                System.out.println(">>>mapping exists");
 
                 if(mappings != null){
                     createIndexRequest.mapping(mappings, XContentType.JSON);
                 }
+
                 restHighLevelClient.indices().create(createIndexRequest, RequestOptions.DEFAULT);
+
 
             }catch(Exception e){
                 LOG.error(e.getMessage(), e);

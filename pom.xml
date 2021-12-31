@@ -51,7 +51,6 @@
 
 
 		<!-- elastic search start -->
-		<!-- https://mvnrepository.com/artifact/co.elastic.clients/elasticsearch-java -->
 		<dependency>
 			<groupId>co.elastic.clients</groupId>
 			<artifactId>elasticsearch-java</artifactId>

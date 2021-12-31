@@ -16,7 +16,7 @@ public class ActorController {
     private final ActorService actorService;
 
     @PostMapping("/save")
-    public Boolean save(Actor actor){
+    public Boolean save(@RequestBody Actor actor){
        return actorService.save(actor);
     }
 
