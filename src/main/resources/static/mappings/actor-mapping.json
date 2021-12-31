@@ -5,6 +5,12 @@
     },
     "name": {
       "type": "text"
+    },
+    "age": {
+      "type": "text"
+    },
+    "birthday": {
+      "type": "date"
     }
   }
 }
