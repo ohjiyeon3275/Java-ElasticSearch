@@ -38,7 +38,7 @@ public class ActorService {
         try{
             String actorAsString = mapper.writeValueAsString(actor);
 
-            IndexRequest request = new IndexRequest("actor-mapping");
+            IndexRequest request = new IndexRequest("actor");
             request.id(actor.getId());
             request.source(actorAsString, XContentType.JSON);
 
@@ -61,7 +61,7 @@ public class ActorService {
         try {
 
 
-            GetResponse documents = restHighLevelClient.get(new GetRequest("actor-mapping", id), RequestOptions.DEFAULT);
+            GetResponse documents = restHighLevelClient.get(new GetRequest("actor", id), RequestOptions.DEFAULT);
 
             if (documents == null) {
                 return null;
@@ -79,7 +79,7 @@ public class ActorService {
     public List<Actor> search(SearchRequestDto searchRequestDto){
 
         SearchRequest searchRequest = SearchUtil.buildSearchRequest(
-                "actor-mapping", searchRequestDto);
+                "actor", searchRequestDto);
 
         if(searchRequest == null){
             LOG.error("searchRequest 없음");
