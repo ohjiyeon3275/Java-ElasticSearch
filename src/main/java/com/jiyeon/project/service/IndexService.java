@@ -20,7 +20,6 @@ import java.util.List;
 @AllArgsConstructor
 public class IndexService {
 
-    private static List<String> INDICES_TO_CREATE = List.of("actor-mapping");
 
     private static final Logger LOG = LoggerFactory.getLogger(IndexUtil.class);
 
@@ -39,37 +38,34 @@ public class IndexService {
 
 
     public void recreateIndices(Boolean isDeleted) {
-
+        String newIndexName = "actor";
+        String mappingFileName = "actor-mapping";
         String settings = IndexUtil.loadAsString("static/es-mapping.json");
-
-        for( String index : INDICES_TO_CREATE ){
 
             try {
                 //to get checking indices
                 Boolean isIndex = restHighLevelClient
                         .indices()
-                        .exists(new GetIndexRequest(index), RequestOptions.DEFAULT);
+                        .exists(new GetIndexRequest(newIndexName), RequestOptions.DEFAULT);
 
 
                 if (isIndex) {
                     if(!isDeleted) {
                         //if index exists and isDelete flag is false -> skip the creating process.
-                        continue;
+                        throw new Exception("isDeleted is false!");
                     }
 
                     // to make sure index is empty (?)
                     restHighLevelClient.indices().delete(
-                            new DeleteIndexRequest(index), RequestOptions.DEFAULT);
+                            new DeleteIndexRequest(newIndexName), RequestOptions.DEFAULT);
 
                 }
 
                 //불러온 파일로 새로운 인덱스를 생성 -- with settings, mappings.
-                CreateIndexRequest createIndexRequest = new CreateIndexRequest("actor");
+                CreateIndexRequest createIndexRequest = new CreateIndexRequest(newIndexName);
                 createIndexRequest.settings(settings, XContentType.JSON);
 
-                String mappings = loadMappings(index);
-                System.out.println(mappings);
-                System.out.println(">>>mapping exists");
+                String mappings = loadMappings(mappingFileName);
 
                 if(mappings != null){
                     createIndexRequest.mapping(mappings, XContentType.JSON);
@@ -82,7 +78,7 @@ public class IndexService {
                 LOG.error(e.getMessage(), e);
             }
         }
-    }
+
 
     private String loadMappings(String index) {
         //mapping file 불러옴 --> 따로 함수 생성
