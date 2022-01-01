@@ -4,8 +4,10 @@ import com.jiyeon.project.domain.Actor;
 import com.jiyeon.project.dto.SearchRequestDto;
 import com.jiyeon.project.service.ActorService;
 import lombok.AllArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -29,4 +31,11 @@ public class ActorController {
     public List<Actor> search(@RequestBody SearchRequestDto searchRequestDto){
         return actorService.search(searchRequestDto);
     }
+
+    @GetMapping("/search/{date}")
+    public List<Actor> getAllActorBirthdaySince(@PathVariable
+                                                @DateTimeFormat(pattern = "yyyy-MM-dd") Date date){
+        return actorService.getAllActorBirthdaySince(date);
+    }
+
 }

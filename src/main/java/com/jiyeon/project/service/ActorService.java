@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -76,10 +77,8 @@ public class ActorService {
 
     }
 
-    public List<Actor> search(SearchRequestDto searchRequestDto){
 
-        SearchRequest searchRequest = SearchUtil.buildSearchRequest(
-                "actor", searchRequestDto);
+    public List<Actor> searchInternal(SearchRequest searchRequest){
 
         if(searchRequest == null){
             LOG.error("searchRequest 없음");
@@ -103,11 +102,27 @@ public class ActorService {
 
         } catch (IOException e) {
             e.printStackTrace();
+            return null;
         }
-
-        return null;
     }
 
+    public List<Actor> search(SearchRequestDto searchRequestDto){
+
+        SearchRequest searchRequest = SearchUtil.buildSearchRequest(
+                "actor", searchRequestDto);
+
+
+        return searchInternal(searchRequest);
+    }
+
+    public List<Actor> getAllActorBirthdaySince(Date date){
+
+        SearchRequest searchRequest = SearchUtil.buildSearchRequest(
+                "actor", "birthday", date);
+
+
+        return searchInternal(searchRequest);
+    }
 
 
 }

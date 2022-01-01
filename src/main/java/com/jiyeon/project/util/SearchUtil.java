@@ -10,6 +10,7 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.util.CollectionUtils;
 
+import java.util.Date;
 import java.util.List;
 
 public class SearchUtil {
@@ -72,9 +73,37 @@ public class SearchUtil {
 
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
 
-        return null;
+    }
+
+    public static SearchRequest buildSearchRequest(String index, String field, Date date) {
+
+        try{
+
+            SearchSourceBuilder sourceBuilder = new SearchSourceBuilder()
+                    .postFilter(getQueryBuilder(field, date));
+
+
+            SearchRequest request = new SearchRequest(index);
+            request.source(sourceBuilder);
+
+            return request;
+
+        }catch(Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
+    }
+
+
+    private static QueryBuilder getQueryBuilder(String field, Date date){
+
+
+        return QueryBuilders.rangeQuery(field).gte(date);
+
     }
 
 }
