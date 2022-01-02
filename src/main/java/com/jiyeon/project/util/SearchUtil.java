@@ -2,10 +2,7 @@ package com.jiyeon.project.util;
 
 import com.jiyeon.project.dto.SearchRequestDto;
 import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.index.query.MultiMatchQueryBuilder;
-import org.elasticsearch.index.query.Operator;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.util.CollectionUtils;
@@ -101,9 +98,50 @@ public class SearchUtil {
 
     private static QueryBuilder getQueryBuilder(String field, Date date){
 
-
         return QueryBuilders.rangeQuery(field).gte(date);
 
     }
+
+    private static QueryBuilder getQueryBuilder(String field, Integer year){
+
+        return QueryBuilders.rangeQuery(field).gte(year);
+
+    }
+    public static SearchRequest buildMovieSearchRequest(String index,
+                                                        SearchRequestDto searchRequestDto,
+                                                        Integer year) {
+
+        try {
+
+            QueryBuilder searchQuery = getQueryBuilder(searchRequestDto);
+            QueryBuilder yearQuery  = getQueryBuilder("year", year);
+
+
+            BoolQueryBuilder boolQuery =
+                    QueryBuilders.boolQuery().must(searchQuery).must(yearQuery);
+
+            SearchSourceBuilder sourceBuilder = new SearchSourceBuilder()
+                    .postFilter(boolQuery);
+
+            if(searchRequestDto.getSort() != null){
+                sourceBuilder = sourceBuilder.sort(
+                        searchRequestDto.getSort(),
+                        searchRequestDto.getOrder() != null ? searchRequestDto.getOrder() : SortOrder.ASC
+                );
+            }
+
+
+            SearchRequest request = new SearchRequest(index);
+            request.source(sourceBuilder);
+
+            return request;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
+    }
+
 
 }

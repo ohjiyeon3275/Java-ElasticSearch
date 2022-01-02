@@ -22,6 +22,7 @@ public class ActorController {
        return actorService.save(actor);
     }
 
+
     @GetMapping("/{id}")
     public Actor findById(@PathVariable String id){
         return actorService.findById(id);

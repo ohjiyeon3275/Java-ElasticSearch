@@ -8,6 +8,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 import org.springframework.data.elasticsearch.annotations.Setting;
 
 import javax.persistence.Id;
+import java.util.List;
 
 @Getter
 @Setter
@@ -23,5 +24,8 @@ public class Movie {
 
     @Field(type= FieldType.Text)
     private Integer year;
+
+    @Field(type= FieldType.Text)
+    private List<String> genre;
 
 }
