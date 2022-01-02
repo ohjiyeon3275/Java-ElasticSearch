@@ -12,7 +12,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class SearchRequestDto {
+public class SearchRequestDto extends PageRequestDto{
 
     private List<String> fields;
 

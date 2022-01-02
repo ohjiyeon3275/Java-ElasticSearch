@@ -39,4 +39,10 @@ public class MovieController {
                                           @PathVariable Integer year) throws Exception {
         return movieService.getAllMovieByTitle(searchRequestDto, year);
     }
+
+    @PostMapping("/search-page")
+    public List<Movie> getAllMovieByTitle(@RequestBody SearchRequestDto searchRequestDto) throws Exception {
+        return movieService.getAllMovieByTitlePage(searchRequestDto);
+    }
+
 }

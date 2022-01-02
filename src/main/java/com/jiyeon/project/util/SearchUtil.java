@@ -12,6 +12,21 @@ import java.util.List;
 
 public class SearchUtil {
 
+
+    /**
+     * getQueryBuilders
+     */
+    private static QueryBuilder getQueryBuilder(String field, Date date){
+
+        return QueryBuilders.rangeQuery(field).gte(date);
+
+    }
+
+    private static QueryBuilder getQueryBuilder(String field, Integer year){
+        return QueryBuilders.rangeQuery(field).gte(year);
+
+    }
+
     public static QueryBuilder getQueryBuilder(SearchRequestDto searchRequestDto) {
 
         if( searchRequestDto == null ){
@@ -45,6 +60,10 @@ public class SearchUtil {
                 .orElse(null);
     }
 
+
+    /**
+     * buildSearchRequest
+     */
     public static SearchRequest buildSearchRequest(String index,
                                                    SearchRequestDto searchRequestDto) {
 
@@ -75,10 +94,11 @@ public class SearchUtil {
 
     }
 
-    public static SearchRequest buildSearchRequest(String index, String field, Date date) {
+    public static SearchRequest buildSearchRequest(String index,
+                                                   String field,
+                                                   Date date) {
 
         try{
-
             SearchSourceBuilder sourceBuilder = new SearchSourceBuilder()
                     .postFilter(getQueryBuilder(field, date));
 
@@ -96,32 +116,53 @@ public class SearchUtil {
     }
 
 
-    private static QueryBuilder getQueryBuilder(String field, Date date){
-
-        return QueryBuilders.rangeQuery(field).gte(date);
-
-    }
-
-    private static QueryBuilder getQueryBuilder(String field, Integer year){
-
-        return QueryBuilders.rangeQuery(field).gte(year);
-
-    }
-    public static SearchRequest buildMovieSearchRequest(String index,
-                                                        SearchRequestDto searchRequestDto,
-                                                        Integer year) {
-
+    //movies
+    public static SearchRequest buildSearchRequest(String index,
+                                                   SearchRequestDto searchRequestDto,
+                                                   Integer year) {
         try {
 
             QueryBuilder searchQuery = getQueryBuilder(searchRequestDto);
             QueryBuilder yearQuery  = getQueryBuilder("year", year);
-
 
             BoolQueryBuilder boolQuery =
                     QueryBuilders.boolQuery().must(searchQuery).must(yearQuery);
 
             SearchSourceBuilder sourceBuilder = new SearchSourceBuilder()
                     .postFilter(boolQuery);
+
+            if(searchRequestDto.getSort() != null){
+                sourceBuilder = sourceBuilder.sort(
+                        searchRequestDto.getSort(),
+                        searchRequestDto.getOrder() != null ? searchRequestDto.getOrder() : SortOrder.ASC
+                );
+            }
+
+            SearchRequest request = new SearchRequest(index);
+            request.source(sourceBuilder);
+
+            return request;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
+    }
+
+    public static SearchRequest buildSearchRequestPage(String index,
+                                                   SearchRequestDto searchRequestDto) {
+
+        try {
+
+            int page = searchRequestDto.getPage();
+            int size = searchRequestDto.getSize();
+            int from = page <=0 ? 0 : page * size;
+
+            SearchSourceBuilder sourceBuilder = new SearchSourceBuilder()
+                    .from(from)
+                    .size(size)
+                    .postFilter(getQueryBuilder(searchRequestDto));
 
             if(searchRequestDto.getSort() != null){
                 sourceBuilder = sourceBuilder.sort(
@@ -142,6 +183,7 @@ public class SearchUtil {
         }
 
     }
+
 
 
 }

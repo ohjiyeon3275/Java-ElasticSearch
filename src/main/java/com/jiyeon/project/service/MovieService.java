@@ -39,7 +39,37 @@ public class MovieService {
 
     public List<Movie> getAllMovieByTitle(SearchRequestDto searchRequestDto, Integer year) throws Exception {
 
-        SearchRequest searchRequest = SearchUtil.buildMovieSearchRequest("movies", searchRequestDto, year);
+        SearchRequest searchRequest = SearchUtil.buildSearchRequest("movies", searchRequestDto, year);
+
+
+        if(searchRequest == null){
+            throw new Exception("searchRequest not exists");
+        }
+
+        try{
+            SearchResponse searchResponse = restHighLevelClient.search(
+                    searchRequest, RequestOptions.DEFAULT);
+
+            SearchHit[] searchHits = searchResponse.getHits().getHits();
+            List<Movie> movies = new ArrayList<>(searchHits.length);
+
+            for( SearchHit hit : searchHits ){
+                movies.add(
+                        mapper.readValue(hit.getSourceAsString(), Movie.class)
+                );
+            }
+
+            return movies;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public List<Movie> getAllMovieByTitlePage(SearchRequestDto searchRequestDto) throws Exception {
+
+        SearchRequest searchRequest = SearchUtil.buildSearchRequestPage("movies", searchRequestDto);
 
 
         if(searchRequest == null){
